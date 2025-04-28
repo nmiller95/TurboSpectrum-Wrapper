@@ -46,13 +46,12 @@ def read_random_input_parameters(file):
     freeParams = [ s.lower() for s in header.split()[:4] ]
     for k in ['teff', 'logg', 'vturb', 'feh']:
         if k not in freeParams:
-            print(f"Could not find {k} in the input file {file}. \
-Please check requested input.")
+            print(f"Could not find {k} in the input file {file}. Please check requested input.")
             exit()
             # TODO: better exceptions/error tracking
     values =  np.array( [ l.split() for l in data[1:] ] ).astype(float)
     input_par = {
-                'teff':values[:, 0], 'logg':values[:, 1], 'vturb':values[:, 2],\
+                'teff':values[:, 0], 'logg':values[:, 1], 'vturb':values[:, 2],
                 'feh':values[:,3], 'elements' : {}
                 }
 
@@ -66,16 +65,14 @@ Please check requested input.")
     input_par['comments'] = np.full(input_par['count'], '', dtype='U5000')
 
     if 'Fe' not in input_par['elements']:
-        print(f"WARNING: input contains [Fe/H], but no A(Fe).\
-Setting A(Fe) to 7.5")
+        print(f"WARNING: input contains [Fe/H], but no A(Fe). Setting A(Fe) to 7.5")
         el = ChemElement('Fe')
         el.abund = input_par['feh'] + 7.5
         input_par['elements'][el.ID] = el
 
     absAbundCheck = np.array([ el.abund / 12. for el in input_par['elements'].values() ])
     if (absAbundCheck < 0.0).any():
-        print(f"Warning: abundances must be supplied relative to H, \
-on log12 scale. Please double check input file '{file}'")
+        print(f"Warning: abundances must be supplied relative to H, on log12 scale. Please check input file '{file}'")
     # TODO: move free parameters as a sub-dictinary of the return
     return input_par, freeParams
 
@@ -87,12 +84,17 @@ class setup(object):
     Parameters
     ----------
     file : str
-        path to the configuration file, './config.txt' by default
+        path to the configuration file, 'config.txt' by default
 
     """
-    def __init__(self, file='./config.txt', mode='MAinterpolate'):
-        if 'cwd' not in self.__dict__.keys():
-            self.cwd = f"{os.getcwd()}/"
+    def __init__(self, file='config.txt', mode='MAinterpolate'):
+        # if 'cwd' not in self.__dict__.keys():
+        #     self.cwd = f"{os.getcwd()}/"
+        current_file = os.path.abspath(__file__)
+        current_dir = os.path.dirname(current_file)
+        self.cwd = os.path.dirname(current_dir)  # project root
+        print(self.cwd)
+
         self.debug = 0
         self.ncpu  = 1
         self.nlte = 0
@@ -103,7 +105,19 @@ class setup(object):
             print(f"Unknown mode in setup(): supported options are {supportModes}")
             exit()
 
-        self.read_config_file(file)
+        # Configuration file
+        try:
+            self.read_config_file(file)
+        except FileNotFoundError:
+            input_file = os.path.join(self.cwd, 'input', file)
+            self.read_config_file(input_file)
+
+        # Model atmospheres directory
+        try:
+            self.atmos_path = os.path.join(self.cwd, "input", self.atmos_path)
+        except Exception as e:
+            print(e)
+
 
         """ Any element to be treated in NLTE eventually? """
         if 'inputParams_file' in self.__dict__:
@@ -113,13 +127,13 @@ class setup(object):
                     break
 
         if 'nlte_config' not in self.__dict__ or not self.nlte:
-            print(f"{50*'*'}\n Note: all elements will be computed in LTE!\n \
-To set up NLTE, use 'nlte_config' flag\n {50*'*'}")
+            print(f"{50*'*'}\n Note: all elements will be computed in LTE!\n"
+                  f"To set up NLTE, use 'nlte_config' flag\n {50*'*'}")
 
         """ Create a directory to save spectra"""
         # TODO: all directory creation should be done at the same time
         today = datetime.date.today().strftime("%b-%d-%Y")
-        self.spectraDir = self.cwd + f"/spectra-{today}/"
+        self.spectraDir = self.cwd + f"/output/spectra-{today}/"
         if not os.path.isdir(self.spectraDir):
             os.mkdir(self.spectraDir)
 
@@ -154,15 +168,13 @@ To set up NLTE, use 'nlte_config' flag\n {50*'*'}")
             else: 
                 self.depthScaleNew = np.linspace(self.depthScale[0], self.depthScale[1], self.depthScale[2])
                 print(f"Updated depth scale to {len(self.depthScaleNew):.0f} points")
-             
 
             self.interpolate()
 
         elif mode.strip() == 'MAprovided':
             if 'atmos_path' not in self.__dict__ or 'atmos_list' not in self.__dict__:
-                print("Provide path to model atmospheres 'atmos_path' \
-and path to file listing requested model atmospheres 'atmos_list' \
-in the config file ")
+                print("Provide path to model atmospheres 'atmos_path' and path to file listing requested "
+                      "model atmospheres 'atmos_list' in the config file ")
                 exit()
             self.atmos_list = np.loadtxt(self.atmos_list, ndmin=1, dtype=str)
             self.atmos_list = np.array([ self.atmos_path + f.replace('./', self.cwd) if f.startswith('./') \
@@ -171,8 +183,7 @@ in the config file ")
             if self.debug:
                 print(f"Requested {len(self.atmos_list):.0f} model atmospheres")
             if 'atmos_format' not in self.__dict__:
-                print("Provide one of the following format keys \
-in the config file as 'atmos_format' ")
+                print("Provide one of the following format keys in the config file as 'atmos_format' ")
                 exit()
 
         "Some formatting required by TS routines"
@@ -227,8 +238,7 @@ in the config file as 'atmos_format' ")
                 search = np.full(self.inputParams['count'], False)
                 el.departFiles = np.full(self.inputParams['count'], None)
                 for i in range(len(el.abund)):
-                    departFile = el.departDir + \
-                            f"/depCoeff_{el.ID}_{el.abund[i]:.3f}_{i}.dat"
+                    departFile = el.departDir + f"/depCoeff_{el.ID}_{el.abund[i]:.3f}_{i}.dat"
                     el.departFiles[i] = departFile
                     if os.path.isfile(departFile):
                         search[i] = True
@@ -236,22 +246,22 @@ in the config file as 'atmos_format' ")
                 if np.array(search).all():
                     print(f"Will re-use interpolated departure coefficients found under {el.departDir}")
                 else:
-                    self = prepInterpolation_NLTE(self, el, interpolCoords, \
+                    self = prepInterpolation_NLTE(self, el, interpolCoords,
                         rescale = True, depthScale = self.depthScaleNew)
                     self = interpolateAllPoints_NLTE(self, el)
                     del el.nlteData
                     del el.interpolator
 
+
     def createTSinputFlags(self):
-        self.ts_input = { 'PURE-LTE':'.false.', 'MARCS-FILE':'.false.', 'NLTE':'.false.',\
-        'NLTEINFOFILE':'', 'LAMBDA_MIN':4000, 'LAMBDA_MAX':9000, 'LAMBDA_STEP':0.05,\
+        self.ts_input = { 'PURE-LTE':'.false.', 'MARCS-FILE':'.false.', 'NLTE':'.false.',
+        'NLTEINFOFILE':'', 'LAMBDA_MIN':4000, 'LAMBDA_MAX':9000, 'LAMBDA_STEP':0.05,
          'MODELOPAC':'./OPAC', 'RESULTFILE':'' }
 
 
         """ At what wavelenght range to compute a spectrum? """
         # sort just in case values are mixed up
-        self.lam_start, self.lam_end = min(self.lam_end, self.lam_start), \
-                                    max(self.lam_end, self.lam_start)
+        self.lam_start, self.lam_end = min(self.lam_end, self.lam_start), max(self.lam_end, self.lam_start)
 
         self.ts_input['LAMBDA_MIN'] = self.lam_start
         self.ts_input['LAMBDA_MAX'] = self.lam_end
@@ -262,7 +272,8 @@ in the config file as 'atmos_format' ")
         elif 'resolution' in  self.__dict__:
             self.ts_input['LAMBDA_STEP'] = np.mean([self.lam_start, self.lam_end]) / self.resolution
         else:
-            print(f"Provide step for sampling the wavelength in the config file. Either 'lam_step' (in AA), or 'resolution' (FWHM at the mean wavelength will be step)")
+            print(f"Provide step for sampling the wavelength in the config file. Either 'lam_step' (in AA), "
+                  f"or 'resolution' (FWHM at the mean wavelength will be step)")
             exit()
 
 
@@ -276,6 +287,7 @@ in the config file as 'atmos_format' ")
             exit(1)
         llFormatted = []
         for path in self.linelist:
+            path = str(os.path.join(self.cwd, "input/linelists", path))
             if '*' in path:
                 llFormatted.extend( glob.glob(path) )
             else:
@@ -293,7 +305,7 @@ in the config file as 'atmos_format' ")
             self.ts_input['NLTE'] = '.true.'
 
     def read_config_file(self, file):
-        "Read all the keys from the config file"
+        """Read all the keys from the config file"""
         for line in open(file, 'r').readlines():
             line = line.strip()
             if not line.startswith('#') and len(line)>0:
@@ -321,8 +333,8 @@ in the config file as 'atmos_format' ")
                     self.__dict__[k].append(val)
 
         if 'inputParams_file' in self.__dict__:
-            self.inputParams, self.freeInputParams =\
-             read_random_input_parameters(self.inputParams_file)
+            ip_file = str(os.path.join(self.cwd, 'input', self.inputParams_file))
+            self.inputParams, self.freeInputParams = read_random_input_parameters(ip_file)
 
         if 'nlte_config' in self.__dict__:
             for l in self.nlte_config:
@@ -335,8 +347,8 @@ in the config file as 'atmos_format' ")
                                                     else f  for f in files]
 
                 if (elID not in self.inputParams['elements']) and self.debug:
-                    print(f"NLTE data is provided for {elID}, \
-    but it is not a free parameter in the input file {self.inputParams_file}.")
+                    print(f"NLTE data is provided for {elID}, but it is not a free parameter in the input file "
+                          f"{self.inputParams_file}.")
                 else:
                     el = self.inputParams['elements'][elID]
                     el.nlte = True

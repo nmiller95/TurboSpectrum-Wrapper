@@ -36,7 +36,7 @@ def runTSforOpac(args):
         specResultFile = './ignoreSpectrum.txt'
         compute_bsyn(
                     setup.ts_input, elementalAbundances, atmos, modelOpacFile,
-                    specResultFile, nlteInfoFile = None, quite = True
+                    specResultFile, nlte_info_file= None, quite = True
                     )
 
 if __name__ == '__main__':

@@ -1,0 +1,35 @@
+# config file used to setup TurboSpectrum (TS) run
+debug = 1
+# TS root directory
+ts_root = '/Users/nicmi306/Documents/TurboSpectrum-Wrapper/turbospectrum'
+
+# list of model atmospheres to use
+# path to model atmospheres (in MARCS .mod format only for now). Assumed to be within projectfolder/input/ directory
+atmos_path = 'marcs_models'
+
+# 'm1d' or 'marcs'
+atmos_format = 'marcs'
+atmos_list = 'MARCS_all.in'
+
+# path to the linelist(s) - these MUST be in input/linelists/ directory
+linelist = ['turbospec.20180901t20.atoms','turbospec.20180901t20.Hlinedata','turbospec.20180901t20.molec','turbospec.h2o_POKAZATEL-B*.dat']
+ncpu=2
+
+inputParams_file = 'input_param.txt'
+
+# NLTE stuff
+#nlte_grids_path = './nlteGrids/'
+#nlte_config = [ ]
+#nlte_config = [ H : [ 'H/NLTEgrid_H_MARCS_May-10-2021.bin',  'H/auxData_H_MARCS_May-10-2021.txt, 'H/atom.h20'] ]
+#nlte_config += [ Fe : [ 'Fe/NLTEgrid4TS_Fe_MARCS_May-07-2021.bin','Fe/auxData_Fe_MARCS_May-07-2021.dat', 'Fe/atom.fe607a'] ]
+#nlte_config += [ Ba : [ 'Ba/NLTEgrid_Ba_MARCS_May-10-2021.bin', 'Ba/auxData_Ba_MARCS_May-10-2021.txt', 'Ba/atom.ba111' ] ]
+
+# starting wavelength, AA
+lam_start = 15600
+# last wavelength, AA
+lam_end = 15700
+# wavelength step (will be sampled uniformly across the spectrum)
+lam_step = 0.05
+# or
+# resolution per wavelenght (R capital)
+# resolution = 1000000

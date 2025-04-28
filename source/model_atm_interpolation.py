@@ -261,13 +261,13 @@ def prepInterpolation_MA(setup):
 
     "Model atmosphere grid"
     if setup.debug: print("preparing model atmosphere interpolator...")
-    modelAtmGrid = get_all_ma_parameters(setup.atmos_path,  setup.depthScaleNew,\
+    modelAtmGrid = get_all_ma_parameters(setup.atmos_path,  setup.depthScaleNew,
                                     format = setup.atmos_format, debug=setup.debug)
-    passed  = preInterpolationTests(modelAtmGrid, interpolCoords, \
+    passed  = preInterpolationTests(modelAtmGrid, interpolCoords,
                                     valueKey='structure', dataLabel = 'model atmosphere grid' )
     if not passed:
         exit()
-    interpFunction, normalisedCoord = NDinterpolateGrid(modelAtmGrid, interpolCoords, \
+    interpFunction, normalisedCoord = NDinterpolateGrid(modelAtmGrid, interpolCoords,
                                     valueKey='structure')
     """
     Create hull object to test whether each of the requested points
@@ -276,8 +276,8 @@ def prepInterpolation_MA(setup):
     """
     hull = Delaunay(np.array([ modelAtmGrid[k] / normalisedCoord[k] for k in interpolCoords ]).T)
 
-    setup.interpolator['modelAtm'] = {'interpFunction' : interpFunction, \
-                                    'normCoord' : normalisedCoord, \
+    setup.interpolator['modelAtm'] = {'interpFunction' : interpFunction,
+                                    'normCoord' : normalisedCoord,
                                     'hull': hull}
     del modelAtmGrid
     return setup, interpolCoords
