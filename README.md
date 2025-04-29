@@ -47,9 +47,10 @@ You will only need the `.mod` files.
 If you prefer to place these elsewhere, you can update the variable `atmos_path` in `/input/config.txt`
 
 ### Line lists
-Line lists suitable for generating M-dwarf spectra have been included in the `/input/linelists` directory. 
+Line lists suitable for generating M-dwarf spectra should be added to the `/input/linelists` directory. 
 Place or replace line lists here and update the variable `linelist` in `/input/config.txt`.
-
+You can download the line lists used in this version of the wrapper 
+from [APOGEE](https://data.sdss.org/sas/dr17/apogee/spectro/speclib/linelists/turbospec/).
 
 ## Running the wrapper
 
