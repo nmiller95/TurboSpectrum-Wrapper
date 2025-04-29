@@ -4,13 +4,11 @@ from sys import argv
 import shutil
 import subprocess
 import numpy as np
-import pickle
-import glob
 import time
 import datetime
 # local
-from atmos_package import read_atmos_marcs, model_atmosphere
-from configure_setup import setup
+from atmos_package import ModelAtmosphere
+from configure_setup import Setup
 
 
 def compute_babsma(ts_input, atmos, model_opac_file, quite=True):
@@ -26,7 +24,7 @@ def compute_babsma(ts_input, atmos, model_opac_file, quite=True):
         must include the following flags:
             'MARCS-FILE'('.true.' or '.false.'),
             'ts_root' (path to TS executables bsyn.f and babsma.f)
-    atmos : model_atmosphere
+    atmos : ModelAtmosphere
         for which model atmosphere to compute the opacities
     model_opac_file : str
         where to store computed opacities
@@ -81,7 +79,7 @@ def compute_bsyn(ts_input, elemental_abundances, atmos, model_opac_file, spec_re
         contains atomic numbers and abundances of the elements requested for spectral synthesis,
         e.g.
         [ [26, 7.5], [8, 8.76] ]
-    atmos : model_atmosphere
+    atmos : ModelAtmosphere
         for which model atmosphere to compute the opacities
     model_opac_file : str
         path to the file storing opacities computed by babsma
@@ -216,7 +214,7 @@ def parallel_worker(arg):
 
     for i in ind:
         # TODO: move writing intrpolated model somewhere else, maybe even right after intrpolation
-        atmos = model_atmosphere()
+        atmos = ModelAtmosphere()
         if not isinstance(setup_config.inputParams['modelAtmInterpol'][i], type(None)):
             """ Compute the spectrum """
             spec_result_file = f"{temp_dir}/spec_{i:.0f}_{['NLTE' if setup_config.nlte else 'LTE'][0]}"
@@ -232,7 +230,7 @@ def parallel_worker(arg):
                 atmos.id = f"interpol_{i:05d}_{setup_config.jobID}"
                 atmos.path = f"{temp_dir}/atmos.{atmos.id}"
     
-                atmos.write(atmos.path, format = 'ts')
+                atmos.write(atmos.path, fmt='ts')
     
                 """ Compute model atmosphere opacity with babsma.f"""
                 model_opac_file = F"{setup_config.ts_input['ts_root']}/opac_{atmos.id}_{setup_config.jobID}"
@@ -309,6 +307,6 @@ if __name__ == '__main__':
     else:
         print("Usage: ./run_ts.py ./configFile.txt")
         exit()
-    setup_file = setup(file = conf_file)
+    setup_file = Setup(file = conf_file)
     parallel_worker((setup_file, np.arange(len(setup_file))))
     exit(0)

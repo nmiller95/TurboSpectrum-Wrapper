@@ -11,7 +11,7 @@ def read_atmos_marcs(self, file):
 
     Parameters
     ----------
-    self : model_atmosphere
+    self : ModelAtmosphere
         empty initialised model atmosphere object
     file : str
         from which file to read the model
@@ -75,7 +75,7 @@ def read_atmos_m1d(self, file):
 
     Parameters
     ----------
-    self : model_atmosphere
+    self : ModelAtmosphere
         empty initialised model atmosphere object
     file : str
         from which file to read the model
@@ -115,7 +115,7 @@ def write_atmos_m1d(atmos, file):
 
     Parameters
     ----------
-    atmos : model_atmosphere
+    atmos : ModelAtmosphere
 
     file : str
         output file
@@ -134,10 +134,9 @@ def write_atmos_m1d(atmos, file):
         f.write("* depth scale, temperature, N_e, Vmac, Vturb \n")
 
         for i in range(atmos.ndep):
-            s = '\t'.join(f"{ar[i]}" for ar in [atmos.depth_scale, \
-                                                atmos.temp, atmos.ne, \
-                                                atmos.vmac, atmos.vturb])
+            s = '\t'.join(f"{ar[i]}" for ar in [atmos.depth_scale, atmos.temp, atmos.ne, atmos.vmac, atmos.vturb])
             f.write( f"{s}\n" )
+
 
 def write_atmos_m1d4TS(atmos, file):
     """
@@ -165,34 +164,32 @@ def write_dscale_m1d(atmos, file):
     """
     with open(file, 'w') as f:
         # write formatted header
-        f.write("%s \n" %(atmos.id) )
-        f.write("* Depth scale: log(tau500nm) (T), log(column mass) (M), height [km] (H)\n %s \n" %(atmos.depth_scale_type) )
+        f.write("%s \n" % atmos.id)
+        f.write("* Depth scale: log(tau500nm) (T), log(column mass) (M), height [km] (H)\n %s \n" % atmos.depth_scale_type)
         f.write("* Number of depth points, top point \n %.0f %10.4E \n" %(atmos.ndep, atmos.depth_scale[0]) )
         # write structure
         for i in range(len(atmos.depth_scale)):
             f.write("%15.5E \n" %( atmos.depth_scale[i] ) )
 
-
-
     return
 
 
-class model_atmosphere(object):
+class ModelAtmosphere(object):
     # def __init__():
         # pass
-    def read(self, file='atmos.sun', format='m1d'):
+    def read(self, file='atmos.sun', fmt='m1d'):
         """
         Model atmosphere for NLTE calculations
         input:
         (string) file: file with model atmosphere, default: atmos.sun
         (string) format: m1d, marcs, stagger, see function calls below
         """
-        if format.lower() == 'marcs':
+        if fmt.lower() == 'marcs':
             read_atmos_marcs(self, file)
             # print("Setting depth scale to tau500")
             self.depth_scale_type = 'TAU500'
             self.depth_scale = self.tau500
-        elif format.lower() == 'm1d':
+        elif fmt.lower() == 'm1d':
             read_atmos_m1d(self, file)
             try:
                 feh = float(self.id.split('_z')[-1].split('_a')[0])
@@ -210,7 +207,7 @@ class model_atmosphere(object):
 
                     self.feh = np.nan
                     self.alpha = np.nan
-        elif format.lower() == 'stagger':
+        elif fmt.lower() == 'stagger':
 #            print(F"Guessing [Fe/H] and [alpha/Fe] from the file name {self.id}..")
             read_atmos_m1d(self, file)
             teff = float(self.id.split('g')[0].replace('t',''))
@@ -229,9 +226,10 @@ class model_atmosphere(object):
             self.teff = teff
             #print(F"Guessed [Fe/H]={self.feh}, [alpha/Fe]={self.alpha}")
         else:
-            raise Warning("Unrecognized format of model atmosphere: %s" %(format) )
+            raise Warning("Unrecognized format of model atmosphere: %s" %(fmt) )
 
-    def FillIn(self):
+
+    def fill_in(self):
         if 'logg' not in self.__dict__.keys():
             self.logg  = np.nan
         if 'teff' not in self.__dict__.keys():
@@ -247,22 +245,22 @@ class model_atmosphere(object):
     def copy(self):
         return deepcopy(self)
 
-    def write(self, path, format = 'm1d'):
-        self.FillIn()
-        if format == 'm1d':
+
+    def write(self, path, fmt ='m1d'):
+        self.fill_in()
+        if fmt == 'm1d':
             write_atmos_m1d(self, path)
-        elif format == 'ts':
+        elif fmt == 'ts':
             write_atmos_m1d4TS(self, path)
         else:
-            raise Warning(f"Format {format} not supported for writing yet.")
+            raise Warning(f"Format {fmt} not supported for writing yet.")
 
 
-
-if __name__ == '__main__':
-    atmos = model_atmosphere('./atmos.sun_marcs_t5777_4.44_0.00_vmic1_new', format='m1d')
-    write_atmos_m1d(atmos, file='atmos.test_out')
-    write_dscale_m1d(atmos, file='dscale.test_out')
-    atmos = model_atmosphere('./sun.mod', format='Marcs')
-    write_atmos_m1d(atmos, file='atmos.test_out')
-    write_dscale_m1d(atmos, file='dscale.test_out')
-    exit(0)
+# if __name__ == '__main__':
+#     atmo = ModelAtmosphere('./atmos.sun_marcs_t5777_4.44_0.00_vmic1_new', format='m1d')
+#     write_atmos_m1d(atmo, file='atmos.test_out')
+#     write_dscale_m1d(atmo, file='dscale.test_out')
+#     atmo = ModelAtmosphere('./sun.mod', format='Marcs')
+#     write_atmos_m1d(atmo, file='atmos.test_out')
+#     write_dscale_m1d(atmo, file='dscale.test_out')
+#     exit(0)

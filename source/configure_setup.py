@@ -1,16 +1,11 @@
 import numpy as np
 import os
 import shutil
-from sys import argv, exit
+from sys import exit
 import datetime
 import glob
-from scipy.interpolate import interp1d
 # local
-from model_atm_interpolation import get_all_ma_parameters, prepInterpolation_MA, interpolateAllPoints_MA,  prepInterpolation_NLTE, interpolateAllPoints_NLTE
-from atmos_package import model_atmosphere
-from read_nlte import write_departures_forTS, read_departures_forTS, restoreDepartScaling
-import cProfile
-import pstats
+from model_atm_interpolation import prep_interpolation_ma, interpolate_all_points_ma,  prep_interpolation_nlte, interpolate_all_points_nlte
 from chemical_elements import ChemElement
 
 def read_random_input_parameters(file):
@@ -36,16 +31,16 @@ def read_random_input_parameters(file):
         both fundamental (e.g. Teff, log(g), [Fe/H], micro-turbulence)
         and individual chemical abundances
 
-    freeParams : list
+    free_params : list
         parameters describing model atmosphere
     """
     data =[ l.split('#')[0] for l in open(file, 'r').readlines() \
                             if not (l.startswith('#') or l.strip()=='') ]
     header = data[0].replace("'","")
 
-    freeParams = [ s.lower() for s in header.split()[:4] ]
+    free_params = [ s.lower() for s in header.split()[:4] ]
     for k in ['teff', 'logg', 'vturb', 'feh']:
-        if k not in freeParams:
+        if k not in free_params:
             print(f"Could not find {k} in the input file {file}. Please check requested input.")
             exit()
             # TODO: better exceptions/error tracking
@@ -55,11 +50,11 @@ def read_random_input_parameters(file):
                 'feh':values[:,3], 'elements' : {}
                 }
 
-    elIDs = header.split()[4:]
-    for i in range(len(elIDs)):
-        el = ChemElement(elIDs[i].capitalize())
+    el_ids = header.split()[4:]
+    for i in range(len(el_ids)):
+        el = ChemElement(el_ids[i].capitalize())
         el.abund = values[:, i+4]
-        input_par['elements'][elIDs[i]] =  el
+        input_par['elements'][el_ids[i]] =  el
 
     input_par['count'] = len(input_par['teff'])
     input_par['comments'] = np.full(input_par['count'], '', dtype='U5000')
@@ -70,14 +65,14 @@ def read_random_input_parameters(file):
         el.abund = input_par['feh'] + 7.5
         input_par['elements'][el.ID] = el
 
-    absAbundCheck = np.array([ el.abund / 12. for el in input_par['elements'].values() ])
-    if (absAbundCheck < 0.0).any():
+    abs_abund_check = np.array([ el.abund / 12. for el in input_par['elements'].values() ])
+    if (abs_abund_check < 0.0).any():
         print(f"Warning: abundances must be supplied relative to H, on log12 scale. Please check input file '{file}'")
     # TODO: move free parameters as a sub-dictinary of the return
-    return input_par, freeParams
+    return input_par, free_params
 
 
-class setup(object):
+class Setup(object):
     """
     Describes the setup requested for computations
 
@@ -100,9 +95,9 @@ class setup(object):
         self.nlte = 0
         self.safeMemory = 250 # Gb
 
-        supportModes = ['MAinterpolate', 'MAprovided']
-        if mode not in supportModes:
-            print(f"Unknown mode in setup(): supported options are {supportModes}")
+        support_modes = ['MAinterpolate', 'MAprovided']
+        if mode not in support_modes:
+            print(f"Unknown mode in setup(): supported options are {support_modes}")
             exit()
 
         # Configuration file
@@ -215,8 +210,8 @@ class setup(object):
         NLTE departure coefficients are written to files as expected by TS
         right after interpolation
         """
-        self, interpolCoords = prepInterpolation_MA(self)
-        self = interpolateAllPoints_MA(self)
+        self, interpolCoords = prep_interpolation_ma(self)
+        self = interpolate_all_points_ma(self)
         del self.interpolator['modelAtm']
 
 
@@ -246,9 +241,9 @@ class setup(object):
                 if np.array(search).all():
                     print(f"Will re-use interpolated departure coefficients found under {el.departDir}")
                 else:
-                    self = prepInterpolation_NLTE(self, el, interpolCoords,
-                        rescale = True, depthScale = self.depthScaleNew)
-                    self = interpolateAllPoints_NLTE(self, el)
+                    self = prep_interpolation_nlte(self, el, interpolCoords,
+                                                   rescale = True, depth_scale= self.depthScaleNew)
+                    self = interpolate_all_points_nlte(self, el)
                     del el.nlteData
                     del el.interpolator
 

@@ -1,11 +1,8 @@
 import numpy as np
-import os
-import shutil
-from sys import argv, exit
-import datetime
-import glob
+from sys import exit
 
-def atomicZ(el):
+
+def atomic_z(el):
     """
     Finds atomic number (Z) of the chemical element by comparing its name
     to the list stored in ./atomic_numbers.dat
@@ -15,15 +12,20 @@ def atomicZ(el):
     el : str
         element name e.g. 'Mg'
     """
-    if os.path.isfile('./atomic_numbers.dat'):
-        el_z = np.loadtxt('./atomic_numbers.dat', usecols=(0), dtype=int)
-        el_id = np.loadtxt('./atomic_numbers.dat', usecols=(1), dtype=str)
-    else:
+    try:
+        el_z = np.loadtxt('./atomic_numbers.dat', usecols=0, dtype=int)
+        el_id = np.loadtxt('./atomic_numbers.dat', usecols=1, dtype=str)
+
+        for i in range(len(el_id)):
+            if el.lower() == el_id[i].lower():
+                return el_z[i]
+
+        print(f"Caution: element {el} not found in atomic_numbers.dat")
+        return 0
+
+    except FileNotFoundError:
         print("Can not find './atomic_numbers.dat' file. Stopped.")
-        exit(1)
-    for i in range(len(el_id)):
-        if el.lower() == el_id[i].lower():
-            return el_z[i]
+        return exit(1)
 
 
 class ChemElement(object):
@@ -33,22 +35,21 @@ class ChemElement(object):
 
     Parameters
     ----------
-    ID : str
+    i_d : str
         element name e.g. 'Fe'
     """
-    def __init__(self, ID = ''):
+    def __init__(self, i_d =''):
 
-        self.ID = ID.strip().capitalize()
-        self.Z = atomicZ(self.ID)
+        self.ID = i_d.strip().capitalize()
+        self.Z = atomic_z(self.ID)
         self.nlte = False
         self.comment = ""
 
-        # TODO: If you find a nicer way to figure this out
-        # TODO: please change here and the rest of the code will manage
-        if ID.strip().lower() == 'fe' and self.Z == 26:
+        # TODO: If you find a nicer way to figure this out, please change here and the rest of the code will manage
+        if i_d.strip().lower() == 'fe' and self.Z == 26:
             self.isFe = True
         else: self.isFe = False
 
-        if ID.strip().lower() == 'h' and self.Z == 1:
+        if i_d.strip().lower() == 'h' and self.Z == 1:
             self.isH = True
         else: self.isH = False

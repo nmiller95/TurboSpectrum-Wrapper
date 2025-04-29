@@ -2,7 +2,7 @@ from sys import argv
 import numpy as np
 import sys
 sys.path.append('/home/semenova/codes/ts-wrapper/TurboSpectrum-Wrapper/')
-from utility.observations import spectrum, readSpectrumTSwrapper, read_observations
+from obsolete.utility.observations import readSpectrumTSwrapper
 from multiprocessing import Pool
 
 def compareANN2validation(NNpath, spectraOriginal, res=20e3, ncpu=1):

@@ -3,9 +3,9 @@ from sys import argv
 import numpy as np
 from multiprocessing import Pool
 # local
-from configure_setup import setup
+from configure_setup import Setup
 from run_ts import compute_babsma, compute_bsyn
-from atmos_package import model_atmosphere
+from atmos_package import ModelAtmosphere
 
 
 def runTSforOpac(args):
@@ -13,7 +13,7 @@ def runTSforOpac(args):
     for i, atmFile in enumerate(setup.atmos_list[indices]):
         " Read model atmosphere and write in TS appropriate format if not already"
         print(atmFile)
-        atmos = model_atmosphere()
+        atmos = ModelAtmosphere()
         atmos.read(atmFile, setup.atmos_format)
         if setup.atmos_format.strip() == 'marcs':
             setup.ts_input['MARCS-FILE'] = '.true.'
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         print("Usage: $ pytnon generate_random_grid.py ./configFile.txt jobName")
         exit()
 
-    setup = setup(file = conf_file, mode = 'MAprovided')
+    setup = Setup(file = conf_file, mode ='MAprovided')
     setup.jobID = argv[2]
 
     if 'ncpu' not in setup.__dict__:

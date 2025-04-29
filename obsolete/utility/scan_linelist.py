@@ -1,8 +1,8 @@
 import numpy as np
-from sys import argv, exit
-import glob
+from sys import argv
 
-class linelist(object):
+
+class Linelist(object):
     def __init__(self, file = './linelist.txt', fmt='GES'):
         if fmt.lower() == 'ges':
             """
@@ -117,4 +117,4 @@ if __name__ == '__main__':
     if len(argv) < 1:
         raise Warning("<Usage>: python3.7 scan_linelist.py linelist.txt. Only working with TS formatted linelist for now.")
     ll_file = argv[1]
-    linelist_ges = linelist(file = ll_file).data
+    linelist_ges = Linelist(file = ll_file).data

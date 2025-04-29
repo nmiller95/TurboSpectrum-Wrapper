@@ -1,23 +1,15 @@
 # external
-import os
 from sys import argv
 import shutil
-import subprocess
-import datetime
-import numpy as np
-from scipy.interpolate import LinearNDInterpolator
-import pickle
-import glob
-import time
-import warnings
 # local
-from atmos_package import model_atmosphere
-from model_atm_interpolation import *
+from source.model_atm_interpolation import *
+
 
 def mkdir(s):
     if os.path.isdir(s):
         shutil.rmtree(s)
     os.mkdir(s)
+
 
 def random_interpol_test(all_parameters, request_coords, ind_excl):
     """
@@ -44,7 +36,7 @@ def random_interpol_test(all_parameters, request_coords, ind_excl):
     Coordinates are normalised to the max value
     which is returned in norm_coords
     """
-    interp_f, norm_coord = NDinterpolate_MA(all_shortened, request_coords )
+    interp_f, norm_coord = interpolate_MA(all_shortened, request_coords )
 
     "Apply to the coordinates of the excluded model"
     point = [ all_parameters[k][ind_excl] / norm_coord[k] for k in request_coords]
@@ -62,8 +54,6 @@ def random_interpol_test(all_parameters, request_coords, ind_excl):
     return orig_model, interpolated_structure
 
 
-
-
 if __name__ == '__main__':
     if len(argv) < 2:
         print(f"Specify a number of counts (how many times to perform the test?)")
@@ -73,16 +63,13 @@ if __name__ == '__main__':
 
     atmos_path = '/Users/semenova/phd/projects/ts-wrapper/input/atmos/MARCS/all/'
 
-    ma_grid= get_all_ma_parameters(atmos_path, \
-                                            format = 'marcs', debug=True)
+    ma_grid= get_all_ma_parameters(atmos_path, fmt = 'marcs', debug=True)
     interpol_coords = ['teff', 'logg', 'feh', 'vturb']
 
     "Generate random indexes to exclude models from the grid"
-    random_ind = ( np.random.uniform(low=0.0, \
-        high=len(ma_grid[interpol_coords[0]])-1.0, size=count) ).astype(int)
+    random_ind = ( np.random.uniform(low=0.0, high=len(ma_grid[interpol_coords[0]])-1.0, size=count) ).astype(int)
 
     for i in random_ind:
-        orig_structure, interpol_structure = \
-                            random_interpol_test(ma_grid, interpol_coords, i)
+        orig_structure, interpol_structure = random_interpol_test(ma_grid, interpol_coords, i)
 
     exit(0)
