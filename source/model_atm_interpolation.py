@@ -89,8 +89,7 @@ def get_all_ma_parameters(models_path, depth_scale_new, fmt='m1d', debug = False
                     # try:
                     file_path = models_path + entry.name
                     ma = ModelAtmosphere()
-
-                    ma.read(file_path, format=fmt)
+                    ma.read(file_path, fmt=fmt)
 
                     if ma.mass <= 1.0:
 

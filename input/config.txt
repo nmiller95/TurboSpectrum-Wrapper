@@ -6,8 +6,9 @@ ts_root = '/Users/nicmi306/Documents/TurboSpectrum-Wrapper/turbospectrum'
 
 # -------- MARCS MODELS -------- #
 # MARCS model atmospheres (in MARCS .mod format only for now). Absolute path or assumed to be in input/ directory.
-atmos_path = 'marcs_models'
-atmos_format = 'marcs'  # 'm1d' or 'marcs' - keep as marcs
+atmos_path = 'marcs_models/'
+# atmos_format = 'm1d' or 'marcs' - keep as marcs
+atmos_format = 'marcs'
 atmos_list = 'MARCS_all.in'
 
 # -------- LINE LISTS -------- #
@@ -27,7 +28,10 @@ lam_step = 0.05
 # resolution = 1000000
 
 # Number of CPUs to use in parallelisation
-ncpu = 6
+ncpu = 8
 
 # Debugging option
 debug = 1
+
+# Output label to append to directory name
+output_label = ''

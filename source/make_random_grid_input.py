@@ -197,24 +197,27 @@ if __name__ == "__main__":
     # To fix at a single value, let lower=upper.
     # Give [X/Fe] relative abundances - they will be converted to absolute values using Magg+22 solar abundances
     grid_limits = {
-        'Teff': (2500, 4500),
-        'logg': (4.3, 5.3),
+        'Teff': (2800, 4500), # Split into two chunks: 2800-3900K for logg 4.5-5.5, and 3901-4500K for logg 4.5-5.0
+        'logg': (4.5, 5.5),
         'Vturb': (0.01, 2.0),
-        'FeH': (-2.0, 0.6),
-        # 'C': (-0.2, 0.8),  # 14 elements as per Souto+22
-        'O': (-0.2, 0.8),
-        # 'Na': (-0.2, 0.8),
-        'Mg': (-0.2, 0.8),
-        # 'Al': (-0.2, 0.8),
-        'Si': (-0.2, 0.8),
-        # 'K': (-0.2, 0.8),
-        'Ca': (-0.2, 0.8),
-        'Ti': (-0.2, 0.8),
-        # 'V': (-0.2, 0.8),
-        # 'Cr': (-0.2, 0.8),
-        # 'Mn': (-0.2, 0.8),
-        # 'Fe': (-0.2, 0.8),
-        # 'Ni': (-0.2, 0.8)
+        'FeH': (-2.5, 0.6),  # Lower, so as to account for low-metallicity edge effects (see FGK pipeline)
+        # 14 elements as per Souto+22
+        # Inspected Terese's published spectra with the current line mask:
+        'C': (-0.5, 0.5),  # A handful (5-10) of molecular lines, strongest ones being CN
+        'O': (-0.5, 0.5),  # Lots of molecules, especially OH
+        # 'Na': (-0.5, 0.5),  # None
+        'Mg': (-0.5, 0.5),  # Around 4 lines but all are very weak
+        'Al': (-0.5, 0.5),  # 2 strong lines
+        'Si': (-0.5, 0.5),  # A handful of Si and SiH lines, most quite weak but 2 relatively strong
+        'K': (-0.5, 0.5),  # 2 strong lines
+        'Ca': (-0.5, 0.5),  # Around 6 lines, 2-3 are strong
+        'Ti': (-0.5, 0.5),  # Around 4 lines, 2-3 relatively strong
+        # 'V': (-0.5, 0.5),  # Only 1 line, not super strong
+        # 'Cr': (-0.5, 0.5),  # Only 1 line, quite weak
+        # 'Mn': (-0.5, 0.5),  # Around 8 lines, all but one are very weak
+        'Fe': (-0.5, 0.5),  # Quite a few instances, but usually very weak lines. 2-3 Fe lines and 2-3 FeH are good
+        # 'Ni': (-0.5, 0.5)  # 3 lines, only one is relatively strong
+        # My recommendation: C, O, Mg, Al, Si, K, Ca, Ti, Fe
     }
 
     gen = SpectrumGridGenerator(grid_limits)

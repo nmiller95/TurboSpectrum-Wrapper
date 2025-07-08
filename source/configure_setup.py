@@ -128,6 +128,8 @@ class Setup(object):
         """ Create a directory to save spectra"""
         # TODO: all directory creation should be done at the same time
         today = datetime.date.today().strftime("%b-%d-%Y")
+        if 'output_label' in self.__dict__:
+            today += self.__dict__['output_label']
         self.spectraDir = self.cwd + f"/output/spectra-{today}/"
         if not os.path.isdir(self.spectraDir):
             os.mkdir(self.spectraDir)
