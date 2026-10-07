@@ -144,6 +144,34 @@ class SpectrumGridGenerator:
                 samples.append(merged)
         return samples
 
+    @staticmethod
+    def _write_batch_config(base_config, out_path, input_file, label):
+        """
+        Copy a base config file and point it at one batch: sets inputParams_file (the batch's parameter
+        file in input/) and output_label (appended to the spectra directory name). Other lines are kept.
+
+        Args:
+            base_config (str): path to the base config file
+            out_path (str): where to write the batch config
+            input_file (str): name of the batch parameter file, e.g. 'pseudo_grid_b00.txt'
+            label (str): output label, e.g. '_pseudo_grid_b00'
+        """
+        new_values = {'inputParams_file': input_file, 'output_label': label}
+        out_lines, done = [], set()
+        with open(base_config) as f:
+            for line in f:
+                key = line.split('=')[0].strip()
+                if '=' in line and not line.lstrip().startswith('#') and key in new_values:
+                    out_lines.append(f"{key} = '{new_values[key]}'\n")
+                    done.add(key)
+                else:
+                    out_lines.append(line if line.endswith('\n') else line + '\n')
+        for key, val in new_values.items():
+            if key not in done:
+                out_lines.append(f"{key} = '{val}'\n")
+        with open(out_path, 'w') as f:
+            f.writelines(out_lines)
+
     def export_txt(self, samples: list, filename: str):
         """
         Write space-separated .txt file with headers and custom formatting. Last column is fixed to H = 12.0.
@@ -189,7 +217,7 @@ class SpectrumGridGenerator:
 if __name__ == "__main__":
 
     # Number of spectra to generate
-    n_spectra = 50
+    n_spectra = 550
 
     # Lower, upper limits to place on each parameter.
 
@@ -197,10 +225,10 @@ if __name__ == "__main__":
     # To fix at a single value, let lower=upper.
     # Give [X/Fe] relative abundances - they will be converted to absolute values using Magg+22 solar abundances
     grid_limits = {
-        'Teff': (2800, 4500), # Split into two chunks: 2800-3900K for logg 4.5-5.5, and 3901-4500K for logg 4.5-5.0
-        'logg': (4.5, 5.5),
+        'Teff': (3800, 3900), # Split into two chunks: 2800-3900K for logg 4.5-5.5, and 3901-4500K for logg 4.5-5.0
+        'logg': (5.0, 5.5),
         'Vturb': (0.01, 2.0),
-        'FeH': (-2.5, 0.6),  # Lower, so as to account for low-metallicity edge effects (see FGK pipeline)
+        'FeH': (-1.7, 0.6),  # Lower (-2.5-0.6), so as to account for low-metallicity edge effects (see FGK pipeline)
         # 14 elements as per Souto+22
         # Inspected Terese's published spectra with the current line mask:
         'C': (-0.5, 0.5),  # A handful (5-10) of molecular lines, strongest ones being CN

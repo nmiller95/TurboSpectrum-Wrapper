@@ -17,15 +17,15 @@ linelist = ['turbospec.20180901t20.atoms','turbospec.20180901t20.Hlinedata','tur
 
 # -------- RANDOM GRID PARAMETERS FILE -------- #
 # Generate this using make_random_grid_input.py. Needs to be kept in input/ directory.
-inputParams_file = 'random_grid.txt'
+inputParams_file = 'pseudo_grid_b13.txt'
 
 # -------- OTHER OPTIONS -------- #
 # Wavelength range and step of generated spectra in Å. Spectra wavelengths will be uniformly sampled.
-lam_start = 15600
-lam_end = 15700
-lam_step = 0.05
+lam_start = 15000
+lam_end = 17000
+lam_step = 0.16
 # Alternatively, can use resolving power:
-# resolution = 1000000
+#resolution = 22500
 
 # Number of CPUs to use in parallelisation
 ncpu = 8
@@ -34,4 +34,4 @@ ncpu = 8
 debug = 1
 
 # Output label to append to directory name
-output_label = ''
+output_label = '_pseudo_13'
